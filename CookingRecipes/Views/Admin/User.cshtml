@@ -1,0 +1,44 @@
+﻿@model List<CookingRecipes.Domain.Entities.User>
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "User Management";
+}
+
+<h2 class="mb-4">User Management</h2>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Admin</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var user in Model)
+        {
+            <tr>
+                <td>@user.FirstName @user.LastName</td>
+                <td>@user.Email</td>
+                <td>@(user.IsAdmin == true ? "Yes" : "No")</td>
+                <td>
+                    @if (user.IsDeleted == false)
+                    {
+                        <form asp-controller="Admin" asp-action="DeleteUser" asp-route-id="@user.Id" method="post" asp-route-id="@user.Id">
+                            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                        </form>
+
+                    }
+                    else
+                    {
+                        <form asp-controller="Admin" asp-action="RestoreUser" asp-route-id="@user.Id" method="post" asp-route-id="@user.Id">
+                            <button type="submit" class="btn btn-success btn-sm">Restore</button>
+                        </form>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

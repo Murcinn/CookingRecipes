@@ -1,0 +1,91 @@
+﻿@model CookingRecipes.Domain.Entities.Recipe
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = Model.Title;
+    int currentUserId = ViewBag.CurrentUserId ?? 0;
+}
+
+<div class="container my-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h2 class="mb-0">@Model.Title</h2>
+            @* Display the author's name below the title *@
+            @if (Model.Author != null)
+            {
+                <h6 class="text-light">Author: @Model.Author.FirstName @Model.Author.LastName</h6>
+            }
+            <div class="mt-2">
+                @if (User.Identity.IsAuthenticated && Model.AuthorId == currentUserId)
+                {
+                    <a asp-controller="Recipe" asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-light btn-sm me-2">Edit Recipe</a>
+
+                    <form asp-action="Delete" method="post" asp-route-id="@Model.Id" class="d-inline-block"
+                          onsubmit="return confirm('Are you sure you want to delete this recipe?');">
+                        <button type="submit" class="btn btn-danger btn-sm">Delete Recipe</button>
+                    </form>
+                }
+            </div>
+        </div>
+
+        <div class="card-body">
+            @if (!string.IsNullOrEmpty(Model.ImagePath))
+            {
+                <div class="mb-4 text-center">
+                    <img src="@Model.ImagePath" alt="@Model.Title" class="img-fluid rounded" style="max-height:300px;" />
+                </div>
+            }
+            <p><strong>Description:</strong> @Model.Description</p>
+            <p><strong>Preparation Time:</strong> @Model.PreparationTime minutes</p>
+            <p><strong>Cooking Time:</strong> @Model.CookingTime minutes</p>
+            <p><strong>Servings:</strong> @Model.Servings</p>
+            <p><strong>Public Recipe:</strong> @(Model.IsPublic ? "Yes" : "No")</p>
+        </div>
+    </div>
+
+    <div class="mt-5">
+        <h3>Ingredients</h3>
+        <table class="table table-striped">
+            <thead class="table-light">
+                <tr>
+                    <th>Name</th>
+                    <th>Quantity</th>
+                    <th>Unit</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var ingredient in Model.Ingredients)
+                {
+                    <tr>
+                        <td>@ingredient.Name</td>
+                        <td>@ingredient.Quantity</td>
+                        <td>@ingredient.Unit</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="mt-4">
+        <h3>Steps</h3>
+        <ol class="list-group list-group-numbered">
+            @foreach (var step in Model.Steps.OrderBy(s => s.StepNumber))
+            {
+                <li class="list-group-item">@step.Instruction</li>
+            }
+        </ol>
+    </div>
+
+    <div class="mt-4">
+        <h3>Categories</h3>
+        <div>
+            @foreach (var rc in Model.RecipeCategories)
+            {
+                <span class="badge bg-info text-dark me-1 mb-1" style="font-size: 1rem;border-radius: 0.5rem;">
+                    @rc.Category.Name
+                </span>
+            }
+        </div>
+    </div>
+
+</div>

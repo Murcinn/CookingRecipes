@@ -1,0 +1,113 @@
+﻿@model CookingRecipes.Api.Models.HomeRecipesModel
+@using Microsoft.AspNetCore.Http
+@inject IHttpContextAccessor HttpContextAccessor
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Home";
+
+    // Use cookie-based check for authentication
+    var token = HttpContextAccessor.HttpContext?.Request.Cookies["AuthToken"];
+    var isLoggedIn = !string.IsNullOrEmpty(token);
+}
+
+<div class="container mt-5">
+    <div class="text-center">
+        <h1 class="display-4">Welcome to Cooking Recipes</h1>
+        <p class="lead">Discover and share your favorite recipes!</p>
+        @if (isLoggedIn)
+        {
+            <a asp-controller="Recipe" asp-action="Create" class="btn btn-success btn-lg mt-3">
+                <i class="bi bi-plus-circle"></i> Add Recipe
+            </a>
+        }
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-lg-8 offset-lg-2">
+            <form method="get" asp-controller="Home" asp-action="Index" class="card p-4 shadow-sm">
+                <h4 class="mb-3">Find Your Favorite Recipes</h4>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <input type="text" name="searchQuery" class="form-control" placeholder="Search by name" value="@Model.SearchQuery" />
+                    </div>
+                    <div class="col-md-4">
+                        <select name="categoryId" class="form-select">
+                            <option value="">All Categories</option>
+                            @foreach (var cat in Model.Categories)
+                            {
+                                <option value="@cat.Id" selected="@(cat.Id == Model.SelectedCategoryId ? "selected" : null)">
+                                    @cat.Name
+                                </option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-search"></i> Search
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    @if (isLoggedIn)
+    {
+        <h3 class="mt-5">My Recipes</h3>
+        @if (Model.MyRecipes.Any())
+        {
+            <div class="row row-cols-1 row-cols-md-3 g-4">
+                @foreach (var recipe in Model.MyRecipes)
+                {
+                    <div class="col">
+                        <div class="card h-100 shadow-sm">
+                            <img src="@recipe.ImagePath" class="card-img-top img-fluid" alt="@recipe.Title" style="height: 200px; object-fit: cover;">
+                            <div class="card-body">
+                                <h5 class="card-title">@recipe.Title</h5>
+                                <p class="card-text text-muted">@recipe.Description?.Substring(0, Math.Min(100, recipe.Description.Length))...</p>
+                                <a asp-controller="Recipe" asp-action="Details" asp-route-id="@recipe.Id" class="btn btn-outline-primary">View Recipe</a>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <p class="text-muted">No recipes found.</p>
+        }
+    }
+
+    <h3 class="mt-5">All Recipes</h3>
+    @if (Model.AllRecipes != null && Model.AllRecipes.Any())
+    {
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+            @foreach (var recipe in Model.AllRecipes)
+            {
+                <div class="col">
+                    <div class="card h-100 shadow-sm">
+                        <img src="@recipe.ImagePath" class="card-img-top img-fluid" alt="@recipe.Title" style="height: 200px; object-fit: cover;">
+                        <div class="card-body">
+                            <h5 class="card-title">@recipe.Title</h5>
+                            <p class="card-text text-muted">@recipe.Description?.Substring(0, Math.Min(100, recipe.Description.Length))...</p>
+                            <a asp-controller="Recipe" asp-action="Details" asp-route-id="@recipe.Id" class="btn btn-outline-primary">View Recipe</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <p class="text-muted">No recipes found.</p>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            console.log("Page loaded successfully");
+        });
+    </script>
+}

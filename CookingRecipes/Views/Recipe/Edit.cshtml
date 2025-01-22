@@ -1,0 +1,240 @@
+﻿@model CookingRecipes.App.DTOs.Recipes.EditRecipeDto
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Edit Recipe";
+}
+
+<div class="container my-5">
+    <div class="card shadow-sm">
+        <div class="card-header bg-warning text-white">
+            <h2 class="mb-0">@ViewData["Title"]</h2>
+        </div>
+        <div class="card-body">
+            <form asp-action="Edit" method="post" asp-route-id="@Model.Id" enctype="multipart/form-data" id="editRecipeForm">
+                <div class="mb-3">
+                    <label asp-for="Title" class="form-label">
+                        Title<span class="text-danger">*</span>
+                    </label>
+                    <input asp-for="Title" class="form-control" />
+                    <span asp-validation-for="Title" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Description" class="form-label">
+                        Description<span class="text-danger">*</span>
+                    </label>
+                    <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                    <span asp-validation-for="Description" class="text-danger"></span>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label asp-for="PreparationTime" class="form-label">
+                            Preparation Time (minutes)<span class="text-danger">*</span>
+                        </label>
+                        <input asp-for="PreparationTime" class="form-control" type="number" />
+                        <span asp-validation-for="PreparationTime" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="CookingTime" class="form-label">
+                            Cooking Time (minutes)<span class="text-danger">*</span>
+                        </label>
+                        <input asp-for="CookingTime" class="form-control" type="number" />
+                        <span asp-validation-for="CookingTime" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="Servings" class="form-label">
+                            Servings<span class="text-danger">*</span>
+                        </label>
+                        <input asp-for="Servings" class="form-control" type="number" />
+                        <span asp-validation-for="Servings" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="form-check mb-4">
+                    <input asp-for="IsPublic" class="form-check-input" type="checkbox" />
+                    <label asp-for="IsPublic" class="form-check-label">Public Recipe</label>
+                </div>
+
+                <h3>Dish Image</h3>
+                <div class="mb-3">
+                    <label asp-for="DishImage" class="form-label">
+                        Change Dish Image<span class="text-danger">*</span>
+                    </label>
+                    <input asp-for="DishImage" class="form-control" type="file" />
+                    <span asp-validation-for="DishImage" class="text-danger"></span>
+                </div>
+
+                <h3>Ingredients</h3>
+                <div id="ingredients-container" class="mb-3">
+                    @for (int i = 0; i < Model.Ingredients.Count; i++)
+                    {
+                        <div class="ingredient-entry row g-3 mb-2">
+                            <div class="col-md-4">
+                                <label class="form-label">
+                                    Name<span class="text-danger">*</span>
+                                </label>
+                                <input name="Ingredients[@i].Name" class="form-control" value="@Model.Ingredients[i].Name" />
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">
+                                    Quantity<span class="text-danger">*</span>
+                                </label>
+                                <input name="Ingredients[@i].Quantity" type="number" step="any" class="form-control" value="@Model.Ingredients[i].Quantity" />
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">
+                                    Unit<span class="text-danger">*</span>
+                                </label>
+                                <input name="Ingredients[@i].Unit" class="form-control" value="@Model.Ingredients[i].Unit" />
+                            </div>
+                            <div class="col-md-1 d-flex align-items-end">
+                                <button type="button" class="btn btn-danger remove-ingredient">Remove</button>
+                            </div>
+                        </div>
+                    }
+                </div>
+                <button type="button" id="add-ingredient" class="btn btn-secondary mb-4">Add Ingredient</button>
+
+                <h3>Steps</h3>
+                <div id="steps-container" class="mb-3">
+                    @for (int j = 0; j < Model.Steps.Count; j++)
+                    {
+                        <div class="step-entry mb-3">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <label class="form-label">
+                                        Step Number<span class="text-danger">*</span>
+                                    </label>
+                                    <input name="Steps[@j].StepNumber" type="number" class="form-control mb-2" value="@Model.Steps[j].StepNumber" readonly />
+                                </div>
+                                <div class="align-self-end">
+                                    <button type="button" class="btn btn-danger remove-step">Remove</button>
+                                </div>
+                            </div>
+                            <label class="form-label">
+                                Instruction<span class="text-danger">*</span>
+                            </label>
+                            <textarea name="Steps[@j].Instruction" class="form-control" rows="3">@Model.Steps[j].Instruction</textarea>
+                        </div>
+                    }
+                </div>
+                <button type="button" id="add-step" class="btn btn-secondary mb-4">Add Step</button>
+
+                <h3>Categories<span class="text-danger">*</span></h3>
+                <div class="dropdown mb-4">
+                    <button class="btn btn-secondary dropdown-toggle" type="button" id="categoriesDropdown"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                        Select Categories
+                    </button>
+                    <div class="dropdown-menu p-3" aria-labelledby="categoriesDropdown" style="max-height:300px; overflow-y:auto;">
+                        @if (ViewBag.Categories != null)
+                        {
+                            foreach (var category in ViewBag.Categories as List<CookingRecipes.Domain.Entities.Category>)
+                            {
+                                var isChecked = Model.CategoryIds.Contains(category.Id);
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox"
+                                           name="CategoryIds" value="@category.Id" id="cat_@category.Id" @(isChecked ? "checked" : "") />
+                                    <label class="form-check-label" for="cat_@category.Id">@category.Name</label>
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+    <script>
+        let ingredientIndex = @Model.Ingredients.Count;
+        let stepIndex = @Model.Steps.Count;
+
+        document.getElementById('add-ingredient').addEventListener('click', function () {
+            const container = document.getElementById('ingredients-container');
+            const div = document.createElement('div');
+            div.className = 'ingredient-entry row g-3 mb-2';
+            div.innerHTML = `
+                        <div class="col-md-4">
+                            <label class="form-label">Name<span class="text-danger">*</span></label>
+                            <input name="Ingredients[${ingredientIndex}].Name" class="form-control" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Quantity<span class="text-danger">*</span></label>
+                            <input name="Ingredients[${ingredientIndex}].Quantity" type="number" step="any" class="form-control" />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Unit<span class="text-danger">*</span></label>
+                            <input name="Ingredients[${ingredientIndex}].Unit" class="form-control" />
+                        </div>
+                        <div class="col-md-1 d-flex align-items-end">
+                            <button type="button" class="btn btn-danger remove-ingredient">Remove</button>
+                        </div>`;
+            container.appendChild(div);
+            ingredientIndex++;
+        });
+
+        document.getElementById('add-step').addEventListener('click', function () {
+            const container = document.getElementById('steps-container');
+            const div = document.createElement('div');
+            div.className = 'step-entry mb-3';
+            div.innerHTML = `
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <label class="form-label">Step Number<span class="text-danger">*</span></label>
+                                <input name="Steps[${stepIndex}].StepNumber" type="number" class="form-control mb-2" value="${stepIndex + 1}" readonly />
+                            </div>
+                            <div class="align-self-end">
+                                <button type="button" class="btn btn-danger remove-step">Remove</button>
+                            </div>
+                        </div>
+                        <label class="form-label">Instruction<span class="text-danger">*</span></label>
+                        <textarea name="Steps[${stepIndex}].Instruction" class="form-control" rows="3"></textarea>`;
+            container.appendChild(div);
+            stepIndex++;
+        });
+
+        document.getElementById('ingredients-container').addEventListener('click', function (e) {
+            if (e.target && e.target.matches("button.remove-ingredient")) {
+                e.target.closest('.ingredient-entry').remove();
+            }
+        });
+
+        document.getElementById('steps-container').addEventListener('click', function (e) {
+            if (e.target && e.target.matches("button.remove-step")) {
+                e.target.closest('.step-entry').remove();
+            }
+        });
+
+        document.getElementById('editRecipeForm').addEventListener('submit', function (e) {
+            const requiredSelectors = [
+                'input[name="Title"]',
+                'textarea[name="Description"]',
+                'input[name="PreparationTime"]',
+                'input[name="CookingTime"]',
+                'input[name="Servings"]'
+            ];
+
+            let missingFields = [];
+            requiredSelectors.forEach(selector => {
+                const field = document.querySelector(selector);
+                if (field) {
+                    if ((field.type === 'file' && field.files.length === 0) ||
+                        (field.type !== 'file' && !field.value.trim())) {
+                        missingFields.push(selector);
+                    }
+                }
+            });
+
+            if (missingFields.length > 0) {
+                e.preventDefault();
+                alert('Please fill in all required fields marked with *.');
+            }
+        });
+    </script>
+}
