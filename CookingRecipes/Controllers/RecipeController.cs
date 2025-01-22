@@ -148,6 +148,4 @@ public class RecipeController : Controller
 
         return RedirectToAction("Index", "Home");
     }
-
-
 }
